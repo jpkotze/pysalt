@@ -108,7 +108,7 @@ def checkInput(targetRA, targetDec, filter, instrument, targetRadius):
 
     # parse RA and dec into sexagesimal or target name for passing to VizieR
 
-    print targetRA, targetDec
+#    print targetRA, targetDec
     if targetDec == '':
         # in target name mode
         name_mode = True
@@ -152,7 +152,7 @@ def checkInput(targetRA, targetDec, filter, instrument, targetRadius):
 
     # Splits the RA into a list with several elements - works for both sexa and dec
         checkRA = StringUtil.splitDMSStr(targetRA)
-        print checkRA
+#        print checkRA
         if checkRA[0]=='-':	# RA is -ve
             raise BadInput, 'RA is negative'
         elif len(checkRA)==3:	# decimal
@@ -447,7 +447,7 @@ def sortResults(table, n_stars, headlines, min_r, max_r, min_mag, max_mag):
     sorted = data[sort_index]
     pref_sort = pref[sort_index]
 
-    n_stars = min(n_stars,6)	# return at most 6 stars
+    n_stars = min(n_stars,10)	# return at most 6 stars
 
     # there must be an easier way to print these strings!
     dprint('Preferences calculated, best: '+str(pref_sort[0,0].tolist()[0])+
@@ -472,8 +472,8 @@ def sortResults(table, n_stars, headlines, min_r, max_r, min_mag, max_mag):
 
 # main function
 
-def findGuideStars(targetRA, targetDec="",
-					filter='', instrument='', targetRadius=2.):
+def findGuideStars(targetRA, targetDec="", filter='', instrument='', 
+                   targetRadius=2.):
 
 # doc string
 
@@ -493,9 +493,10 @@ def findGuideStars(targetRA, targetDec="",
 # this should go into the check input function, but too much passing
 # for the moment - will change later
 # alternatively use classes?
+   
     instrument = instrument.lower()
     if instrument == 'rss':
-        pref_max_r = 4.9     # prefered outer edge of anulus in arcmin
+        pref_max_r = 5.     # prefered outer edge of anulus in arcmin
         pref_min_r = 4.     # prefered inner edge of anulus in arcmin
         abs_max_r = 5.      # absolute limit on outer edge
         abs_min_r = 1.      # absolute limit on inner edge
@@ -545,7 +546,7 @@ def findGuideStars(targetRA, targetDec="",
 
 # set up query
     url = constructVizUrl(targetRA, targetDec, abs_min_r, abs_max_r, filter, abs_min_mag, abs_max_mag)
-
+    
     vprint("Querying...")
     dprint("Using URL:\n" + url)
 

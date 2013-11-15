@@ -27,16 +27,13 @@ def init_plot(cra, cdec):
     fig = pl.figure(figsize=(14,10))
     ax = fig.add_subplot(111)    
     pl.axis('equal')
-    pl.xlabel('RSS x (unbinned pix)')
-    pl.ylabel('RSS y (unbinned pix)')
-    
-    ax.set_xlim(cra + 0.121868, cra - 0.121868)
-    ax.set_ylim(cdec - 0.07312, cdec + 0.07312)
-    
+    pl.xlabel('Right Ascension [deg]')
+    pl.ylabel('Declination [deg]')
+
     return ax
     
 
-def test(ax, cra, cdec):
+def draw_CCD_FoV(ax, cra, cdec):
     '''
     setup the plotting window with the RSS FoV and chip locations
     '''
@@ -66,6 +63,9 @@ def test(ax, cra, cdec):
     
     circ = Circle((cra, cdec), dcr, color='none', ec='r')
     ax.add_patch(circ)
+    
+    ax.set_xlim(cra + 0.121868, cra - 0.121868)
+    ax.set_ylim(cdec - 0.07312, cdec + 0.07312)
     
     
            
@@ -103,7 +103,7 @@ def plot_slitlets(ax, x):
     for i in out_FoV_ids:
         ax.plot(x[i]['targ_ra'], x[i]['targ_dec'], 'o', color='r')
         
-    # all the objects in the FoV that have to collisions
+    # all the objects in the FoV that have no collisions
     for i in in_FoV_ids:
         ax.plot(x[i]['targ_ra'], x[i]['targ_dec'], '.', color='w', ms=3)
         rect = Rectangle((slit_x0[i], slit_y0[i]), slit_width[i], slit_length[i], color='k', ec='k', alpha=0.7)
@@ -111,7 +111,7 @@ def plot_slitlets(ax, x):
         rect = Rectangle((spec_x0[i], spec_y0[i]), spec_width[i], spec_length[i], color='b', ec='b', alpha=0.3)
         ax.add_patch(rect)  
         
-    # all the objsects in the FoV that have not collisions    
+    # all the objsects in the FoV that have collisions    
     for i in cols_ids:
         ax.plot(x[i]['targ_ra'], x[i]['targ_dec'], '.', color='w', ms=3)
         rect = Rectangle((slit_x0[i], slit_y0[i]), slit_width[i], slit_length[i], color='k', ec='k', alpha=0.7)
@@ -119,46 +119,109 @@ def plot_slitlets(ax, x):
         rect = Rectangle((spec_x0[i], spec_y0[i]), spec_width[i], spec_length[i], color='r', ec='r', alpha=0.3)
         ax.add_patch(rect)  
         
+    return ax
+        
 #    ax.draw()
 def get_guide_stars(cra, dec):
+    '''
+    '''
     # divide the cra by 15 so it's in decimal hours and not degrees
     ra = cra / 15.
     dec = cdec
     
-    n_stars, data, header = guide_stars.findGuideStars(ra, dec, '', 'rss', targetRadius=3.)
+    n_stars, data, header = guide_stars.findGuideStars(ra, dec, '', 'rss', 20.)
     
-    return n_stars, data, header
+    if n_stars > 0:
+        print 'guide stars: ', n_stars
+        gstar_RA = np.array([sex2RA(data[i,2]) for i in range(0,len(data))])
+        gstar_Dec =  np.array([sex2Dec(data[i,3]) for i in range(0,len(data))]) 
+        
+        return gstar_RA, gstar_Dec
+        
+    else:
+        return np.array([999.99]), np.array([999.99])
     
+def plot_guide_stars(ax, ra, dec):
+    '''
     
-def plot_guide_stars(ax, cra, dec):
+    '''
     
-    n_stars, data, header = guide_stars.findGuideStars(cra, cdec, '', 'rss', targetRadius=3.)
+    glines = ax.plot(ra, dec, 'c*', ms=15)
     
-    
-    print n_stars, data, header
+    return glines
 
-def clear_plot(ax):
+def sex2RA(x):
+    x = x.split()
+    if float(x[0])>=0:
+        return (float(x[0])+float(x[1])/60.0+float(x[2])/3600.) * 15.
+    else:
+        return -(abs(float(x[0]))+float(x[1])/60.0+float(x[2])/3600.0) * 15.
+    
+def sex2Dec(x):
+    x = x.split()
+    if float(x[0])>=0:
+        return float(x[0])+float(x[1])/60.0+float(x[2])/3600.0
+    else:
+        return -(abs(float(x[0]))+float(x[1])/60.0+float(x[2])/3600.0)
+        
+         
+
+def clear_plot(ax, cra, cdec):
     ax.cla()
+    
+    
     
 if __name__ == "__main__":
     
     x = np.load('slitlets.npy')
     cra = 61.951306
     cdec = -12.193412
-    pl.ion()
-    
+    gstar_RA, gstar_Dec = get_guide_stars(cra, cdec)    
     ax = init_plot(cra, cdec)
-    n_stars, gstar_data, gstar_header = get_guide_stars(61.951306, -12.193412)
-#    drawCCDs(ax)
-#    drawRSS_FoV(ax)
-    test(ax, cra, cdec)
-#    plot_refstars(ax, x)
-    plot_slitlets(ax, x)
+    
+    menu = False
+    
+    
+    if menu:
+        pl.ion()
+        draw_CCD_FoV(ax, cra, cdec)
+        pl.show()
+    
+        while True:
+            
+            key = str(raw_input('option : '))
+
+            if key.lower() == 'p':
+                print 'plotting...'
+                draw_CCD_FoV(ax, cra, cdec)
+                plot_slitlets(ax, x)
+                glines = plot_guide_stars(ax, gstar_RA, gstar_Dec)
+                pl.draw()
+                
+            elif key.lower() == 'c':
+                ax.cla()
+                draw_CCD_FoV(ax, cra, cdec)
+                pl.draw()      
+                
+            elif key.lower() == 'q':
+                break
+            pass
+    else:
+        
+        draw_CCD_FoV(ax, cra, cdec)
+        plot_slitlets(ax, x)
+        glines = plot_guide_stars(ax, gstar_RA, gstar_Dec)
+        print glines
+        pl.show()
+
+    
+
+    
 #    pl.draw()
 #    time.sleep(5)
 #    clear_plot(ax)
 #    time.sleep(3)
 #    init_plot(cra, cdec)
 #    test(ax, cra, cdec)
-    pl.draw()
-    
+#    pl.draw()
+    pl.show()
