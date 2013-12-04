@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import os,sys
 import numpy as np
+import matplotlib
+matplotlib.use('QT4Agg')
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import SIGNAL, SLOT, QObject
 
@@ -86,6 +88,9 @@ class SlitMaskGui(QtGui.QMainWindow, InfoTab, CatalogTab, OptimizeTab, SlitTab, 
 
         #TESTING the plotmask
         self.plotmask = MaskPlot()
+        self.plotmask.draw_CCD_FoV(self.slitmask.center_ra, self.slitmask.center_dec)
+        self.plotmask.plot_slitlets(self.slitlets.data)
+        self.plotmask.plot_guide_stars(self.slitmask.center_ra, self.slitmask.center_dec)
 
 #        self.slitmask.outFoV()
 #        print self.slitlets.data['fov_flag']

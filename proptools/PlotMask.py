@@ -6,7 +6,9 @@ Created on Wed May  8 23:19:57 2013
 """
 
 import numpy as np
-import pylab as pl
+import matplotlib
+matplotlib.use('QT4Agg')
+import matplotlib.pyplot as pl
 import pywcs
 from matplotlib.patches import Rectangle,Circle
 import sys,os
