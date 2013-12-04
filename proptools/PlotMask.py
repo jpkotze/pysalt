@@ -30,8 +30,11 @@ class MaskPlot():
         '''
         initialise the plotting window and put the labels in place
         '''
-                
         
+        if cra == None:
+            cra = 0.0
+        if cdec == None:
+            cdec = 0.0
         
         pl.ion()
         self.fig = pl.figure(figsize=(14,10))
@@ -45,6 +48,12 @@ class MaskPlot():
         setup the plotting window with the RSS FoV and chip locations
         '''
     def draw_CCD_FoV(self, cra, cdec):
+        
+        if cra == None:
+            cra = 0.0
+        if cdec == None:
+            cdec = 0.0
+            
         pixscale = 0.12535
         
         # chip geometry in degrees
@@ -129,6 +138,7 @@ class MaskPlot():
         pl.draw()
     
     def get_guide_stars(self, cra, cdec):
+        
         '''
         Call the guide star script written by Keith Smith to obtain the 
         positions of candidate guide stars
@@ -153,10 +163,14 @@ class MaskPlot():
         '''
         Plot the guide star postitions
         '''
-        gstar_ra, gstar_dec = self.get_guide_stars(cra, cdec)
-        self.ax.plot(gstar_ra, gstar_dec, 'c*', ms=15, gid='gstars')
         
-        pl.draw()
+        if (cra == None) or (cdec == None):
+            return
+        else:    
+            gstar_ra, gstar_dec = self.get_guide_stars(cra, cdec)
+            self.ax.plot(gstar_ra, gstar_dec, 'c*', ms=15, gid='gstars')
+        
+            pl.draw()
 
     def sex2RA(self, x):
         x = x.split()

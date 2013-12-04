@@ -14,6 +14,7 @@ from slittab import SlitTab
 from reftab import RefTab
 from optimizetab import OptimizeTab
 from finalizetab import FinalizeTab
+from PlotMask import MaskPlot
 
 # added these two import to avoid a seg fault
 from pyraf import iraf
@@ -21,7 +22,7 @@ from iraf import pysalt
 
 from ImageDisplay import ImageDisplay
 
-class SlitMaskGui(QtGui.QMainWindow, InfoTab, CatalogTab, OptimizeTab, SlitTab, RefTab, FinalizeTab):
+class SlitMaskGui(QtGui.QMainWindow, InfoTab, CatalogTab, OptimizeTab, SlitTab, RefTab, FinalizeTab, MaskPlot):
     def __init__(self, parent=None, infile=None, inimage=None, center_ra=None, center_dec=None, position_angle=None):
         QtGui.QWidget.__init__(self, parent)
         
@@ -82,6 +83,9 @@ class SlitMaskGui(QtGui.QMainWindow, InfoTab, CatalogTab, OptimizeTab, SlitTab, 
         self.opt_iter = 10
         self.ui.lineEditOpt_Yspacing.setText(str(self.opt_yspacing))
         self.ui.lineEditOpt_Niter.setText(str(self.opt_iter))
+
+        #TESTING the plotmask
+        self.plotmask = MaskPlot()
 
 #        self.slitmask.outFoV()
 #        print self.slitlets.data['fov_flag']

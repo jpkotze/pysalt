@@ -6,6 +6,7 @@ from slitlets import Slitlets
 from xml.dom import minidom, getDOMImplementation
 import xml.parsers.expat
 
+
 from PyQt4.QtCore import Qt, QVariant, QObject, SIGNAL, QAbstractTableModel, QModelIndex
 
 class SlitMaskError(Exception):
@@ -35,7 +36,7 @@ class SlitMask(QObject):
 
         #create the slitlets
         self.slitlets = Slitlets()
-
+           
         #needed for writing xml
         self.impl = getDOMImplementation()
 
