@@ -28,15 +28,10 @@ class MaskPlot():
     this is the main plotting class for the slit mask design
     '''
     
-    def __init__(self, cra=0.0, cdec=0.0):
+    def __init__(self):
         '''
         initialise the plotting window and put the labels in place
         '''
-        
-        if cra == None:
-            cra = 0.0
-        if cdec == None:
-            cdec = 0.0
         
         pl.ion()
         self.fig = pl.figure(figsize=(14,10))
@@ -46,11 +41,12 @@ class MaskPlot():
         pl.ylabel('Declination [deg]')
    
         pl.show(block=False)
+
+    def draw_CCD_FoV(self, cra, cdec):
         '''
         setup the plotting window with the RSS FoV and chip locations
+        as determined from the cra and cdec coordinates
         '''
-    def draw_CCD_FoV(self, cra, cdec):
-        
         if cra == None:
             cra = 0.0
         if cdec == None:
@@ -96,9 +92,12 @@ class MaskPlot():
         
         in_FoV_ids = np.where((x['priority'] > 0) & (x['fov_flag'] == 1) & (x['collision_flag'] != 1))[0]
         out_FoV_ids = np.where((x['priority'] > 0) & (x['fov_flag'] == 0))[0]
-        refstars_ids = np.where(x['refstar_flag'] == 1)[0]
-        cols_ids = np.where(x['collision_flag'] ==1)[0]    
+        refstars_ids = np.where((x['refstar_flag'] == 1) & (x['inmask_flag'] == 1) & (x['fov_flag'] == 1))[0]
+#        cols_ids = np.where(x['collision_flag'] ==1)[0]    
         
+        in_mask_no_col = np.where((x['inmask_flag'] == 1) & (x['collision_flag'] != 1) & (x['refstar_flag'] != 1) & (x['fov_flag'] == 1))[0]
+        in_mask_col = np.where((x['inmask_flag'] == 1) & (x['collision_flag'] == 1) & (x['refstar_flag'] != 1) & (x['fov_flag'] == 1))[0]
+        all_points =  np.where(x['priority'] > 0)[0]
     
         slit_x0 = x['targ_ra'] - x['width'] / 2. / 3600.
         slit_y0 = x['targ_dec'] - x['len1'] / 3600.
@@ -113,29 +112,45 @@ class MaskPlot():
         
         # plot the reference stars first
         for i in refstars_ids:
-            self.ax.plot(x[i]['targ_ra'], x[i]['targ_dec'], '*', color='k', ms=7, gid='refstar')
+            self.ax.plot(x[i]['targ_ra'], x[i]['targ_dec'], '*', color='k', ms=7, zorder=1, gid='refstar')
             rect = Rectangle((spec_x0[i], spec_y0[i] - 2.5/3600), spec_width[i], 5./3600, color='g', ec='g', alpha=0.5, gid='refstar')
             self.ax.add_patch(rect)
             
         # all the objects that lie outside the FoV
-        for i in out_FoV_ids:
-            self.ax.plot(x[i]['targ_ra'], x[i]['targ_dec'], 'o', color='r', gid='out_point')
+        for i in all_points:
+            self.ax.plot(x[i]['targ_ra'], x[i]['targ_dec'], 'x', color='#454448', zorder=1, gid='all_points')
             
         # all the objects in the FoV that have no collisions
-        for i in in_FoV_ids:
-            self.ax.plot(x[i]['targ_ra'], x[i]['targ_dec'], '.', color='w', ms=3, gid='point')
+#        for i in in_FoV_ids:
+#            self.ax.plot(x[i]['targ_ra'], x[i]['targ_dec'], '.', color='w', ms=3, gid='point')
+#            rect = Rectangle((slit_x0[i], slit_y0[i]), slit_width[i], slit_length[i], color='k', ec='k', alpha=0.7, gid='in_slit')
+#            self.ax.add_patch(rect)     
+#            rect = Rectangle((spec_x0[i], spec_y0[i]), spec_width[i], spec_length[i], color='b', ec='b', alpha=0.3, gid='in_spec')
+#            self.ax.add_patch(rect)  
+#            
+#        # all the objsects in the FoV that have collisions    
+#        for i in cols_ids:
+#            self.ax.plot(x[i]['targ_ra'], x[i]['targ_dec'], '.', color='w', ms=3, gid='point')
+#            rect = Rectangle((slit_x0[i], slit_y0[i]), slit_width[i], slit_length[i], color='k', ec='k', alpha=0.7, gid='col_slit')
+#            self.ax.add_patch(rect)     
+#            rect = Rectangle((spec_x0[i], spec_y0[i]), spec_width[i], spec_length[i], color='r', ec='r', alpha=0.3, gid='col_spec')
+#            self.ax.add_patch(rect)  
+            
+         # all the objects in the FoV that have no collisions
+        for i in in_mask_no_col:
+            self.ax.plot(x[i]['targ_ra'], x[i]['targ_dec'], '.', color='w', ms=3, zorder=4, gid='point')
             rect = Rectangle((slit_x0[i], slit_y0[i]), slit_width[i], slit_length[i], color='k', ec='k', alpha=0.7, gid='in_slit')
             self.ax.add_patch(rect)     
             rect = Rectangle((spec_x0[i], spec_y0[i]), spec_width[i], spec_length[i], color='b', ec='b', alpha=0.3, gid='in_spec')
             self.ax.add_patch(rect)  
             
         # all the objsects in the FoV that have collisions    
-        for i in cols_ids:
-            self.ax.plot(x[i]['targ_ra'], x[i]['targ_dec'], '.', color='w', ms=3, gid='point')
+        for i in in_mask_col:
+            self.ax.plot(x[i]['targ_ra'], x[i]['targ_dec'], '.', color='w', ms=3, zorder=3, gid='point')
             rect = Rectangle((slit_x0[i], slit_y0[i]), slit_width[i], slit_length[i], color='k', ec='k', alpha=0.7, gid='col_slit')
             self.ax.add_patch(rect)     
             rect = Rectangle((spec_x0[i], spec_y0[i]), spec_width[i], spec_length[i], color='r', ec='r', alpha=0.3, gid='col_spec')
-            self.ax.add_patch(rect)  
+            self.ax.add_patch(rect)        
         
         pl.draw()
     
@@ -198,15 +213,15 @@ class MaskPlot():
         remove everything from the plot
         '''
         # remove the slits from the lines artist
-        for i in plot.ax.get_lines():
-            if (i.get_gid() == 'out_point') or \
+        for i in self.ax.get_lines():
+            if (i.get_gid() == 'all_points') or \
                     (i.get_gid() == 'point') or \
                     (i.get_gid() == 'refstar') or \
                     (i.get_gid() == 'gstars'):
                 i.remove()  
 
         # remove the slits from the children artist where the patches are        
-        for i in plot.ax.get_children():
+        for i in self.ax.get_children():
             if (i.get_gid() == 'in_slit') or \
                     (i.get_gid() == 'in_spec') or \
                     (i.get_gid() == 'col_slit') or \
@@ -214,9 +229,36 @@ class MaskPlot():
                     (i.get_gid() == 'refstar'):
                 i.remove()
                 
-        pl.draw()                    
+        pl.draw()  
     
+    def clear_CCD_FoV(self):
+        '''
+        clear the CCD and FoV patches from the plot
+        '''
+        
+        for i in self.ax.get_children():
+            if (i.get_gid() == 'chip1') or \
+                    (i.get_gid() == 'chip2') or \
+                    (i.get_gid() == 'chip3') or \
+                    (i.get_gid() == 'FoV'):
+                i.remove()
+                
+        pl.draw()                     
     
+    def update_cra_cdec(self, cra_new, cdec_new, x):
+        '''
+        when the cra or cdec coordinates are updated, redraw the whole figure
+        with the updated coordinates
+        '''
+        self.clear_all()   
+        self.clear_CCD_FoV()
+        self.draw_CCD_FoV(cra_new, cdec_new)
+        self.plot_slitlets(x)
+        self.plot_guide_stars(cra_new, cdec_new)
+        
+        pl.draw()
+        
+       
     
 if __name__ == "__main__":
 
@@ -225,7 +267,7 @@ if __name__ == "__main__":
     cdec = -12.193412
 #    gstar_RA, gstar_Dec = get_guide_stars(cra, cdec)    
 #    ax = init_plot(cra, cdec)
-    plot = MaskPlot(cra, cdec)
+    plot = MaskPlot()
     plot.draw_CCD_FoV(cra, cdec)
     plot.plot_slitlets(x)
     plot.plot_guide_stars(cra, cdec)

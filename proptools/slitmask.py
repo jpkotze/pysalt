@@ -346,7 +346,8 @@ class SlitMask(QObject):
         
         for i in range(0,len(self.slitlets.data)):
             self.outFoV_row(i)
-            
+        
+        self.slitlets.update_flags()    
         return
 
     def find_collisions(self):
@@ -585,7 +586,7 @@ class SlitMask(QObject):
         # set the FoV flag for slits inside the FoV
 
         self.slitlets.data['fov_flag'] = 1 * pass_test
-
+        self.slitlets.update_flags()
         return
 
 

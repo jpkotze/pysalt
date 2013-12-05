@@ -31,6 +31,8 @@ class SlitMaskGui(QtGui.QMainWindow, InfoTab, CatalogTab, OptimizeTab, SlitTab, 
         #set up the main UI
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        #TESTING the plotmask
+        self.plotmask = MaskPlot()
 #        OptimizeTab.__init__(self,self.ui)
         #set up the slitmask
         self.slitmask=SlitMask(center_ra=center_ra, center_dec=center_dec, position_angle=position_angle )
@@ -74,7 +76,10 @@ class SlitMaskGui(QtGui.QMainWindow, InfoTab, CatalogTab, OptimizeTab, SlitTab, 
             self.ui.radioButtonInfo_Manual.setChecked(True)
             self.setmode2manual()
             self.ui.toolButtonCat_Load.setEnabled(True)
-
+            # if no file is specified then make an empty plot                
+            self.plotmask.draw_CCD_FoV(self.slitmask.center_ra, self.slitmask.center_dec)
+            self.plotmask.plot_slitlets(self.slitlets.data)
+            self.plotmask.plot_guide_stars(self.slitmask.center_ra, self.slitmask.center_dec)
 
 
               #self.displayfootprint()
@@ -86,11 +91,8 @@ class SlitMaskGui(QtGui.QMainWindow, InfoTab, CatalogTab, OptimizeTab, SlitTab, 
         self.ui.lineEditOpt_Yspacing.setText(str(self.opt_yspacing))
         self.ui.lineEditOpt_Niter.setText(str(self.opt_iter))
 
-        #TESTING the plotmask
-        self.plotmask = MaskPlot()
-        self.plotmask.draw_CCD_FoV(self.slitmask.center_ra, self.slitmask.center_dec)
-        self.plotmask.plot_slitlets(self.slitlets.data)
-        self.plotmask.plot_guide_stars(self.slitmask.center_ra, self.slitmask.center_dec)
+        # testing the plotmask stuff
+
 
 #        self.slitmask.outFoV()
 #        print self.slitlets.data['fov_flag']
@@ -182,7 +184,7 @@ class SlitMaskGui(QtGui.QMainWindow, InfoTab, CatalogTab, OptimizeTab, SlitTab, 
             palette = self.setPalette('normal')
             self.ui.lineEditMain_CenRA.setPalette(palette)
             self.ui.lineEditMain_CenRA.setText(str(self.slitmask.center_ra))
-            self.slitmask.outFoV()
+            self.slitmask.outFoV_all()
             self.updatetabs()
 
     def loadCenDEC(self):
@@ -195,7 +197,7 @@ class SlitMaskGui(QtGui.QMainWindow, InfoTab, CatalogTab, OptimizeTab, SlitTab, 
             palette = self.setPalette('normal')
             self.ui.lineEditMain_CenDEC.setPalette(palette)
             self.ui.lineEditMain_CenDEC.setText(str(self.slitmask.center_dec))
-            self.slitmask.outFoV()
+            self.slitmask.outFoV_all()
             self.updatetabs()
 
     def loadpositionangle(self):
@@ -209,7 +211,7 @@ class SlitMaskGui(QtGui.QMainWindow, InfoTab, CatalogTab, OptimizeTab, SlitTab, 
             palette = self.setPalette('normal')
             self.ui.lineEditMain_PA.setPalette(palette)
             self.ui.lineEditMain_PA.setText(str(self.slitmask.position_angle))
-            self.slitmask.outFoV()
+            self.slitmask.outFoV_all()
             self.imagedisplay.rotate(self.slitmask.position_angle)
             self.updatetabs()
 
@@ -247,6 +249,9 @@ class SlitMaskGui(QtGui.QMainWindow, InfoTab, CatalogTab, OptimizeTab, SlitTab, 
        self.updaterefstartable()
        self.imagedisplay.deleteregions()
        self.displayslits()
+       self.plotmask.update_cra_cdec(self.slitmask.center_ra, \
+                                     self.slitmask.center_dec, \
+                                     self.slitmask.slitlets.data)
 #       self.displayfootprint()
 
     def displayslits(self): 
